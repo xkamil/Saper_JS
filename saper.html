@@ -1,0 +1,124 @@
+
+<html>
+<head>
+    <style>
+
+        .cell {
+            width: 14px;
+            height: 14px;
+            display: inline-block;
+            margin: 1px;
+            text-align: center;
+            padding: 5px;
+            font-weight: 400;
+            cursor: pointer;
+        }
+
+        .covered {
+            background-color: #ddd;
+        }
+
+        .marked_cell {
+            background: #ddd url('./images/flag.png') no-repeat center;
+            background-size: 50%;
+        }
+
+        .bomb {
+            background: #ff0000 url('./images/bomb.png') no-repeat center;
+            background-size: 70%;
+        }
+
+
+    </style>
+
+
+
+</head>
+<body>
+<a href="saper.html">Nowa gra</a>
+<div id="board"></div>
+
+<script>
+    var cols = 5;
+    var rows = 5;
+
+    var board = [];
+
+    for(var i = -3; i< rows+2; i++){
+        board[i] = [];
+        for(var j = -3; j < cols+2; j++){
+            board[i][j] = 0;
+        }
+    }
+
+    function placeMines(count, board) {
+        var placed = 0;
+
+        while(placed < count){
+            var successfullyPlaced = false;
+
+            while(!successfullyPlaced){
+                var col = Math.floor(Math.random() * cols);
+                var row = Math.floor(Math.random() * rows);
+                if(board[row][col] >= 0){
+                    board[row][col] = -100;
+                    successfullyPlaced = true;
+                }
+            }
+            placed++;
+        }
+    }
+
+    function markMines(board){
+        for (var i = 0; i<rows; i++){
+            for (var j = 0; j<cols; j++) {
+                if(board[i][j] < 0){
+                    board[i-1][j+1] += 1;
+                    board[i-1][j] += 1;
+                    board[i-1][j-1] += 1;
+                    board[i][j-1] += 1;
+                    board[i][j+1] += 1;
+                    board[i+1][j+1] += 1;
+                    board[i+1][j] += 1;
+                    board[i+1][j-1] += 1;
+                }
+            }
+        }
+    }
+
+    placeMines(10, board);
+    markMines(board);
+    var output = "";
+
+    for (var i = 0; i<rows; i++){
+        output = output + "<div>";
+
+        for (var j = 0; j<cols; j++) {
+            output = output + "<div oncontextmenu=\"mark(" + i + "," + j + ");return false\" onclick=\"show(" + i + "," + j + ")\" class=\"cell covered\" id=\"" + i + "_" + j + "\">&nbsp;</div>";
+        }
+
+        output = output + "</div>";
+    }
+
+    document.getElementById("board").innerHTML = output;
+
+    function show(i,j){
+        var cell = document.getElementById(i+'_'+j);
+
+        if(board[i][j] < 0){
+            cell.className = "cell bomb";
+            alert('Dojebałeś');
+        }else{
+            cell.style.backgroundColor = '#ccc';
+            cell.innerHTML = board[i][j];
+        }
+    }
+
+    function mark(i,j) {
+        var cell = document.getElementById(i+'_'+j);
+        cell.className = "cell marked_cell";
+    }
+
+</script>
+</body>
+</html>
