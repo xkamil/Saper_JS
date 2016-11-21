@@ -2,20 +2,28 @@
 <html>
 <head>
     <style>
-
+        #bombsLeft {
+            color: #ff0000;
+            font-weight: 600;
+        }
         .cell {
-            width: 14px;
-            height: 14px;
+            width: 20px;
+            height: 20px;
             display: inline-block;
             margin: 1px;
             text-align: center;
-            padding: 5px;
-            font-weight: 400;
+            padding: 3px;
             cursor: pointer;
+            font-family: "Arial Black";
+            font-size: 15px;
         }
 
         .covered {
             background-color: #ddd;
+        }
+
+        .discovered {
+            background-color: #eee
         }
 
         .marked_cell {
@@ -27,98 +35,175 @@
             background: #ff0000 url('./images/bomb.png') no-repeat center;
             background-size: 70%;
         }
-
-
     </style>
 
 
 
 </head>
 <body>
-<a href="saper.html">Nowa gra</a>
+<h1>Saper</h1>
+<span>Nowa gra:</span>
+<a href="#" onclick="resetGame(3,2)" class="new_game_link">3x3</a>
+<a href="#" onclick="resetGame(7,7)" class="new_game_link">3x3</a>
+<a href="#" onclick="resetGame(10,15)" class="new_game_link">10x10</a>
+<a href="#" onclick="resetGame(20,25)" class="new_game_link">20x20</a>
+
+<br />
+<br />
+<span>Pozostało bomb: <span id="bombsLeft"></span></span>
 <div id="board"></div>
 
 <script>
-    var cols = 5;
-    var rows = 5;
-
+    var gameStatus = "started";
+    var boardSize = 6;
+    var markedField = -50;
+    var coveredField = 0;
+    var bomb = -100;
     var board = [];
+    var bombsCount = 10;
+    var markedBombs = 0;
+    var discoveredFields = 0;
 
-    for(var i = -3; i< rows+2; i++){
-        board[i] = [];
-        for(var j = -3; j < cols+2; j++){
-            board[i][j] = 0;
+    initBoard();
+    placeMines(10);
+    initBombsIndicators();
+    printBoard();
+    updateBoard();
+
+    function resetGame(gameSize, bombs) {
+        gameStatus = "started";
+        boardSize = gameSize;
+        markedField = -50;
+        coveredField = 0;
+        bomb = -100;
+        board = [];
+        bombsCount = bombs;
+        markedBombs = 0;
+        discoveredFields = 0;
+
+        initBoard();
+        placeMines(10);
+        initBombsIndicators();
+        printBoard();
+        updateBoard();
+
+    }
+
+    function printBoard() {
+        var output = "";
+
+        for (var i = 0; i<boardSize; i++){
+            output = output + "<div>";
+
+            for (var j = 0; j<boardSize; j++) {
+                var color;
+
+                switch(board[i][j]){
+                    case 0 : color = "#20BF00"; break;
+                    case 1 : color = "#4B9B00"; break;
+                    case 2 : color = "#4B9B00"; break;
+                    case 3 : color = "#767800"; break;
+                    case 4 : color = "#A15400"; break;
+                    case 5 : color = "#CC3100"; break;
+                    case 6 : color = "#B62D02"; break;
+                    case 7 : color = "#B62D02"; break;
+                    case 8 : color = "#721E04"; break;
+                    case 9 : color = "#721E04"; break;
+                }
+
+                output = output + "<div style=\"color: "+color+"\" oncontextmenu=\"mark(" + i + "," + j + ");return false\" onclick=\"show(" + i + "," + j + ")\" class=\"cell covered\" id=\"" + i + "_" + j + "\">&nbsp;</div>";
+            }
+
+            output = output + "</div>";
+        }
+
+        document.getElementById("board").innerHTML = output;
+    }
+
+    function initBoard() {
+        for(var i = 0; i< boardSize; i++){
+            board[i] = [];
+            for(var j = 0; j < boardSize; j++){
+                board[i][j] = coveredField;
+            }
         }
     }
 
-    function placeMines(count, board) {
-        var placed = 0;
+    function placeMines() {
+        var placedBombs = 0;
 
-        while(placed < count){
+        while(placedBombs < bombsCount){
             var successfullyPlaced = false;
 
             while(!successfullyPlaced){
-                var col = Math.floor(Math.random() * cols);
-                var row = Math.floor(Math.random() * rows);
-                if(board[row][col] >= 0){
-                    board[row][col] = -100;
+                var col = Math.floor(Math.random() * boardSize);
+                var row = Math.floor(Math.random() * boardSize);
+                if(board[row][col] >= coveredField){
+                    board[row][col] = bomb;
                     successfullyPlaced = true;
                 }
             }
-            placed++;
+            placedBombs++;
         }
     }
 
-    function markMines(board){
-        for (var i = 0; i<rows; i++){
-            for (var j = 0; j<cols; j++) {
+    function initBombsIndicators(){
+        for (var i = 0; i<boardSize; i++){
+            for (var j = 0; j<boardSize; j++) {
                 if(board[i][j] < 0){
-                    board[i-1][j+1] += 1;
-                    board[i-1][j] += 1;
-                    board[i-1][j-1] += 1;
-                    board[i][j-1] += 1;
-                    board[i][j+1] += 1;
-                    board[i+1][j+1] += 1;
-                    board[i+1][j] += 1;
-                    board[i+1][j-1] += 1;
+                    try{ board[i-1][j+1] += 1}catch(e){};
+                    try{  board[i-1][j] += 1}catch(e){};
+                    try{  board[i-1][j-1] += 1}catch(e){};
+                    try{  board[i][j-1] += 1}catch(e){};
+                    try{  board[i][j+1] += 1}catch(e){};
+                    try{  board[i+1][j+1] += 1}catch(e){};
+                    try{  board[i+1][j] += 1}catch(e){};
+                    try{  board[i+1][j-1] += 1}catch(e){};
                 }
             }
         }
     }
 
-    placeMines(10, board);
-    markMines(board);
-    var output = "";
+    function show(i, j) {
+        if (gameStatus == "started") {
+            var cell = document.getElementById(i + '_' + j);
 
-    for (var i = 0; i<rows; i++){
-        output = output + "<div>";
-
-        for (var j = 0; j<cols; j++) {
-            output = output + "<div oncontextmenu=\"mark(" + i + "," + j + ");return false\" onclick=\"show(" + i + "," + j + ")\" class=\"cell covered\" id=\"" + i + "_" + j + "\">&nbsp;</div>";
-        }
-
-        output = output + "</div>";
-    }
-
-    document.getElementById("board").innerHTML = output;
-
-    function show(i,j){
-        var cell = document.getElementById(i+'_'+j);
-
-        if(board[i][j] < 0){
-            cell.className = "cell bomb";
-            alert('Dojebałeś');
-        }else{
-            cell.style.backgroundColor = '#ccc';
-            cell.innerHTML = board[i][j];
+            if (board[i][j] < 0) {
+                cell.className = "cell bomb";
+                gameStatus = "end";
+                alert('Dojebałeś');
+            } else {
+                cell.className = "cell discovered";
+                cell.innerHTML = board[i][j];
+                discoveredFields++;
+                updateBoard();
+            }
         }
     }
 
     function mark(i,j) {
-        var cell = document.getElementById(i+'_'+j);
-        cell.className = "cell marked_cell";
+        if (gameStatus == "started") {
+            var cell = document.getElementById(i + '_' + j);
+            if (cell.className == "cell marked_cell") {
+                cell.className = "cell covered";
+                markedBombs--;
+                updateBoard();
+            } else if (cell.className == "cell covered") {
+                cell.className = "cell marked_cell";
+                markedBombs++;
+                updateBoard();
+            }
+        }
     }
 
+    function updateBoard() {
+        console.log("discovered fields: " + discoveredFields);
+        console.log("marked bombs: " + markedBombs);
+        document.getElementById("bombsLeft").innerHTML = "" + (bombsCount - markedBombs);
+        if(discoveredFields == (boardSize * boardSize) - bombsCount){
+            alert("Wygrałeś!");
+        }
+    }
 </script>
 </body>
 </html>
