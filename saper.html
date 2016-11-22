@@ -1,209 +1,40 @@
-
 <html>
 <head>
-    <style>
-        #bombsLeft {
-            color: #ff0000;
-            font-weight: 600;
-        }
-        .cell {
-            width: 20px;
-            height: 20px;
-            display: inline-block;
-            margin: 1px;
-            text-align: center;
-            padding: 3px;
-            cursor: pointer;
-            font-family: "Arial Black";
-            font-size: 15px;
-        }
-
-        .covered {
-            background-color: #ddd;
-        }
-
-        .discovered {
-            background-color: #eee
-        }
-
-        .marked_cell {
-            background: #ddd url('./images/flag.png') no-repeat center;
-            background-size: 50%;
-        }
-
-        .bomb {
-            background: #ff0000 url('./images/bomb.png') no-repeat center;
-            background-size: 70%;
-        }
-    </style>
-
-
+    <link rel="stylesheet" type="text/css" href="./css/main.css">
+    <link rel="stylesheet" type="text/css" href="./css/bootstrap.css">
 
 </head>
 <body>
-<h1>Saper</h1>
-<span>Nowa gra:</span>
-<a href="#" onclick="resetGame(3,2)" class="new_game_link">3x3</a>
-<a href="#" onclick="resetGame(7,7)" class="new_game_link">3x3</a>
-<a href="#" onclick="resetGame(10,15)" class="new_game_link">10x10</a>
-<a href="#" onclick="resetGame(20,25)" class="new_game_link">20x20</a>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-xs-12">
+            <h1>Saper</h1>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-xs-12">
 
-<br />
-<br />
-<span>Pozostało bomb: <span id="bombsLeft"></span></span>
-<div id="board"></div>
+            <a href="#" onclick="resetGame(3,2)" class="btn btn-sm btn-success">3x3</a>
+            <a href="#" onclick="resetGame(7,7)" class="btn btn-sm btn-success">7x7</a>
+            <a href="#" onclick="resetGame(10,15)" class="btn btn-sm btn-success">10x10</a>
+            <a href="#" onclick="resetGame(20,25)" class="btn btn-sm btn-success">20x20</a>
+        </div>
+    </div>
+    <br/>
+    <div class="row">
+        <div class="col-xs-12">
+            <span>Pozostało bomb: <span id="bombsLeft"></span></span>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-xs-12">
+            <div id="board"></div>
+        </div>
+    </div>
+</div>
 
-<script>
-    var gameStatus = "started";
-    var boardSize = 6;
-    var markedField = -50;
-    var coveredField = 0;
-    var bomb = -100;
-    var board = [];
-    var bombsCount = 10;
-    var markedBombs = 0;
-    var discoveredFields = 0;
 
-    initBoard();
-    placeMines(10);
-    initBombsIndicators();
-    printBoard();
-    updateBoard();
+<script src="js/main.js"></script>
 
-    function resetGame(gameSize, bombs) {
-        gameStatus = "started";
-        boardSize = gameSize;
-        markedField = -50;
-        coveredField = 0;
-        bomb = -100;
-        board = [];
-        bombsCount = bombs;
-        markedBombs = 0;
-        discoveredFields = 0;
-
-        initBoard();
-        placeMines(10);
-        initBombsIndicators();
-        printBoard();
-        updateBoard();
-
-    }
-
-    function printBoard() {
-        var output = "";
-
-        for (var i = 0; i<boardSize; i++){
-            output = output + "<div>";
-
-            for (var j = 0; j<boardSize; j++) {
-                var color;
-
-                switch(board[i][j]){
-                    case 0 : color = "#20BF00"; break;
-                    case 1 : color = "#4B9B00"; break;
-                    case 2 : color = "#4B9B00"; break;
-                    case 3 : color = "#767800"; break;
-                    case 4 : color = "#A15400"; break;
-                    case 5 : color = "#CC3100"; break;
-                    case 6 : color = "#B62D02"; break;
-                    case 7 : color = "#B62D02"; break;
-                    case 8 : color = "#721E04"; break;
-                    case 9 : color = "#721E04"; break;
-                }
-
-                output = output + "<div style=\"color: "+color+"\" oncontextmenu=\"mark(" + i + "," + j + ");return false\" onclick=\"show(" + i + "," + j + ")\" class=\"cell covered\" id=\"" + i + "_" + j + "\">&nbsp;</div>";
-            }
-
-            output = output + "</div>";
-        }
-
-        document.getElementById("board").innerHTML = output;
-    }
-
-    function initBoard() {
-        for(var i = 0; i< boardSize; i++){
-            board[i] = [];
-            for(var j = 0; j < boardSize; j++){
-                board[i][j] = coveredField;
-            }
-        }
-    }
-
-    function placeMines() {
-        var placedBombs = 0;
-
-        while(placedBombs < bombsCount){
-            var successfullyPlaced = false;
-
-            while(!successfullyPlaced){
-                var col = Math.floor(Math.random() * boardSize);
-                var row = Math.floor(Math.random() * boardSize);
-                if(board[row][col] >= coveredField){
-                    board[row][col] = bomb;
-                    successfullyPlaced = true;
-                }
-            }
-            placedBombs++;
-        }
-    }
-
-    function initBombsIndicators(){
-        for (var i = 0; i<boardSize; i++){
-            for (var j = 0; j<boardSize; j++) {
-                if(board[i][j] < 0){
-                    try{ board[i-1][j+1] += 1}catch(e){};
-                    try{  board[i-1][j] += 1}catch(e){};
-                    try{  board[i-1][j-1] += 1}catch(e){};
-                    try{  board[i][j-1] += 1}catch(e){};
-                    try{  board[i][j+1] += 1}catch(e){};
-                    try{  board[i+1][j+1] += 1}catch(e){};
-                    try{  board[i+1][j] += 1}catch(e){};
-                    try{  board[i+1][j-1] += 1}catch(e){};
-                }
-            }
-        }
-    }
-
-    function show(i, j) {
-        if (gameStatus == "started") {
-            var cell = document.getElementById(i + '_' + j);
-
-            if (board[i][j] < 0) {
-                cell.className = "cell bomb";
-                gameStatus = "end";
-                alert('Dojebałeś');
-            } else {
-                cell.className = "cell discovered";
-                cell.innerHTML = board[i][j];
-                discoveredFields++;
-                updateBoard();
-            }
-        }
-    }
-
-    function mark(i,j) {
-        if (gameStatus == "started") {
-            var cell = document.getElementById(i + '_' + j);
-            if (cell.className == "cell marked_cell") {
-                cell.className = "cell covered";
-                markedBombs--;
-                updateBoard();
-            } else if (cell.className == "cell covered") {
-                cell.className = "cell marked_cell";
-                markedBombs++;
-                updateBoard();
-            }
-        }
-    }
-
-    function updateBoard() {
-        console.log("discovered fields: " + discoveredFields);
-        console.log("marked bombs: " + markedBombs);
-        document.getElementById("bombsLeft").innerHTML = "" + (bombsCount - markedBombs);
-        if(discoveredFields == (boardSize * boardSize) - bombsCount){
-            alert("Wygrałeś!");
-        }
-    }
-</script>
 </body>
 </html>
