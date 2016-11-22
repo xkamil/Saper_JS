@@ -1,213 +1,39 @@
-
 <html>
 <head>
-    <style>
-        #bombsLeft {
-            color: #ff0000;
-            font-weight: 600;
-        }
-
-        .cell span {
-            visibility: hidden;
-        }
-
-        .cell_discovered span {
-            visibility: visible;
-        }
-
-        .cell {
-            width: 20px;
-            height: 20px;
-            display: inline-block;
-            margin: 1px;
-            text-align: center;
-            padding: 3px;
-            cursor: pointer;
-            font-family: "Arial Black";
-            font-size: 15px;
-        }
-
-        .cell_covered {
-            background-color: #ddd;
-        }
-
-        .cell_discovered {
-            background-color: #eee
-        }
-
-        .cell_marked {
-            background: #ddd url('./images/flag.png') no-repeat center;
-            background-size: 50%;
-        }
-
-        .cell_bomb {
-            background: #ff0000 url('./images/bomb.png') no-repeat center;
-            background-size: 70%;
-        }
-    </style>
-
-
+    <link rel="stylesheet" type="text/css" href="./css/main.css">
+    <link rel="stylesheet" type="text/css" href="./css/bootstrap.css">
 
 </head>
 <body>
-<h1>Saper</h1>
-<span>Nowa gra:</span>
-<a href="#" onclick="resetGame(3,2)" class="new_game_link">3x3</a>
-<a href="#" onclick="resetGame(7,7)" class="new_game_link">3x3</a>
-<a href="#" onclick="resetGame(10,15)" class="new_game_link">10x10</a>
-<a href="#" onclick="resetGame(20,25)" class="new_game_link">20x20</a>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-xs-12">
+            <h1>Saper</h1>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-xs-12">
 
-<br />
-<br />
-<span>Pozostało bomb: <span id="bombsLeft"></span></span>
-<div id="board"></div>
-
-<script>
-    var board = {
-        boardStatus : "ready",
-        boardSize : 10,
-        minesCount : 10,
-        board : [],
-        discoveredFields : 0,
-
-        MARKED_FIELD : "M",
-        COVERED_FIELD : 0,
-        BOMB : "B",
-
-        field : function(number, bomb, marked, discovered){
-            this.marked = marked;
-            this.number = number;
-            this.bomb = bomb;
-            this.discovered = discovered;
-        },
-
-        initBoard : function (boardSize, minesCount) {
-            this.boardSize = boardSize;
-            this.minesCount = minesCount;
-            this.board = [];
-            this.discoveredFields = 0;
-
-            this.clearBoard();
-            this.placeMines();
-            this.initBombsIndicators();
-        },
-
-        clearBoard : function () {
-            for(var i = 0; i< this.boardSize; i++){
-                this.board[i] = [];
-                for(var j = 0; j < this.boardSize; j++){
-                    this.board[i][j] = new this.field(0, false, false, false);
-                }
-            }
-        },
-
-        discover: function (i, j) {
-            if (this.boardStatus == "ready") {
-                if (this.board[i][j].bomb == true) {
-                    this.boardStatus = "loose";
-                }
-                this.board[i][j].discovered = true;
-                this.discoveredFields++;
-                if(this.discoveredFields == Math.pow(this.boardSize,2) - this.minesCount){
-                    this.boardStatus = "win";
-                }
-            }
-        },
-
-        placeMines : function() {
-            var placedBombs = 0;
-
-            while(placedBombs < this.minesCount){
-                var successfullyPlaced = false;
-
-                while(!successfullyPlaced){
-                    var col = Math.floor(Math.random() * this.boardSize);
-                    var row = Math.floor(Math.random() * this.boardSize);
-                    if(this.board[row][col].bomb == false){
-                        this.board[row][col].bomb = true;
-                        successfullyPlaced = true;
-                    }
-                }
-                placedBombs++;
-            }
-        },
-
-        initBombsIndicators : function(){
-            for (var i = 0; i<this.boardSize; i++){
-                for (var j = 0; j<this.boardSize; j++) {
-                    if(this.board[i][j].bomb == true){
-                        try{ this.board[i-1][j+1].number += 1}catch(e){};
-                        try{ this.board[i-1][j].number += 1}catch(e){};
-                        try{ this.board[i-1][j-1].number += 1}catch(e){};
-                        try{ this.board[i][j-1].number += 1}catch(e){};
-                        try{ this.board[i][j+1].number += 1}catch(e){};
-                        try{ this.board[i+1][j+1].number += 1}catch(e){};
-                        try{ this.board[i+1][j].number += 1}catch(e){};
-                        try{ this.board[i+1][j-1].number += 1}catch(e){};
-                    }
-                }
-            }
-        },
-
-        getHtmlBoard: function () {
-            var output = "";
-
-            for (var i = 0; i < this.boardSize; i++) {
-                output = output + "<div>";
-
-                for (var j = 0; j < this.boardSize; j++) {
-                    var color;
-
-                    switch(this.board[i][j].number){
-                        case 0 : color = "#20BF00"; break;
-                        case 1 : color = "#4B9B00"; break;
-                        case 2 : color = "#4B9B00"; break;
-                        case 3 : color = "#767800"; break;
-                        case 4 : color = "#A15400"; break;
-                        case 5 : color = "#CC3100"; break;
-                        case 6 : color = "#B62D02"; break;
-                        case 7 : color = "#B62D02"; break;
-                        case 8 : color = "#721E04"; break;
-                        case 9 : color = "#721E04"; break;
-                    }
-                    var divClass = "cell";
-
-                    if (this.board[i][j].bomb == false && this.board[i][j].discovered == true) divClass += " cell_discovered";
-                    else if (this.board[i][j].marked == true && this.board[i][j].discovered == false) divClass += " cell_marked";
-                    else if (this.board[i][j].marked == false && this.board[i][j].discovered == false) divClass += " cell_covered";
-                    else if (this.board[i][j].discovered == false) divClass += " cell_covered";
-                    else if (this.board[i][j].bomb == true && this.board[i][j].discovered == true) divClass += " cell_bomb";
+            <a href="#" onclick="resetGame(3,2)" class="btn btn-sm btn-success">3x3</a>
+            <a href="#" onclick="resetGame(7,7)" class="btn btn-sm btn-success">7x7</a>
+            <a href="#" onclick="resetGame(10,15)" class="btn btn-sm btn-success">10x10</a>
+            <a href="#" onclick="resetGame(20,25)" class="btn btn-sm btn-success">20x20</a>
+        </div>
+    </div>
+    <br/>
+    <div class="row">
+        <div class="col-xs-12">
+            <span>Pozostało bomb: <span id="bombsLeft"></span></span>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-xs-12">
+            <div id="board"></div>
+        </div>
+    </div>
+</div>
 
 
-                    output = output + "<div style=\"color: " + color + "\" oncontextmenu=\"board.mark(" + i + "," + j + ");updateView();return false\" onclick=\"board.discover(" + i + "," + j + ");updateView()\" class=\"" + divClass + "\" id=\"" + i + "_" + j + "\"><span>"+ this.board[i][j].number+"</span></div>";
-                }
-
-                output = output + "</div>";
-            }
-
-            return output;
-        },
-
-        mark : function (i, j) {
-            if(this.board[i][j].discovered == false && this.boardStatus == "ready"){
-                if(this.board[i][j].marked == true) this.board[i,j].marked = false;
-                else this.board[i][j].marked = true;
-
-                console.log(this.board[i,j].marked);
-            }
-        }
-    }
-
-
-    board.initBoard(10,10);
-
-
-    function updateView() {
-        var boardDiv = document.getElementById("board");
-        boardDiv.innerHTML = board.getHtmlBoard();
-    }
-
-    updateView();
-</script>
+<script src="js/main.js"></script>
 </body>
 </html>

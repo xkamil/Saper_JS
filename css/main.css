@@ -1,0 +1,38 @@
+#board {
+    display: inline-block;
+    border: solid 4px #777;
+}
+
+#bombsLeft {
+    color: #ff0000;
+    font-weight: 600;
+}
+.cell {
+    width: 30px;
+    height: 30px;
+    display: inline-block;
+    margin: 1px;
+    text-align: center;
+    padding: 3px;
+    cursor: pointer;
+    font-family: "Arial Black";
+    font-size: 15px;
+}
+
+.covered {
+    background-color: #ddd;
+}
+
+.discovered {
+    background-color: #eee
+}
+
+.marked_cell {
+    background: #ddd url('../images/flag.png') no-repeat center;
+    background-size: 50%;
+}
+
+.bomb {
+    background: #ff0000 url('../images/bomb.png') no-repeat center;
+    background-size: 70%;
+}
